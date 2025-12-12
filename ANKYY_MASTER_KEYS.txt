@@ -1,0 +1,93 @@
+=============================================
+🔐 ANKYY.COM — MASTER CREDENTIAL VAULT
+=============================================
+
+[1] SERVER ACCESS (DigitalOcean)
+---------------------------------------------
+IP Address:       [ FILL_HERE ]
+Username:         root
+Password/SSH Key: [ 18112003aA@myloveankyy ]
+SSH Login Command: ssh root@[IP_ADDRESS]
+
+
+
+[2] DATABASE SECRETS (MongoDB)
+---------------------------------------------
+Mongo URI:        mongodb://127.0.0.1:27017/ankyy_brand_db
+Database Name:    [ FILL_HERE ]
+
+[3] API KEYS & SECRETS
+---------------------------------------------
+JWT Secret:       [ FILL_HERE ]
+Admin Key:        [ FILL_HERE ]
+Google Index Key: [ FILL_HERE ] (To be added later)
+
+[4] NGINX CONFIGURATION (The Traffic Cop)
+---------------------------------------------
+Location on Server: /etc/nginx/sites-available/ankyy.com
+Current Config Copy:
+server {
+    listen 80;
+    server_name ankyy.com www.ankyy.com;
+    return 301 https://$host$request_uri; # Redirect HTTP to HTTPS
+}
+
+server {
+    # --- SSL CONFIGURATION ---
+    listen 443 ssl;
+    listen [::]:443 ssl ipv6only=on;
+    server_name ankyy.com www.ankyy.com;
+
+    # Certbot SSL Keys (Matches your screenshot)
+    ssl_certificate /etc/letsencrypt/live/ankyy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/ankyy.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # --- 1. FRONTEND (The Main Website) ---
+    location / {
+        # FIXED: Added .com to path
+        root /var/www/ankyy.com/frontend/build;
+        index index.html index.htm;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # --- 2. ADMIN PANEL (The Dashboard) ---
+    location /admin {
+        # FIXED: Added .com to path
+        alias /var/www/ankyy.com/admin/build;
+        index index.html index.htm;
+        try_files $uri $uri/ /admin/index.html;
+    }
+
+    # --- 3. BACKEND API (The Engine) ---
+    location /api {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # --- 4. WEBSOCKETS (For Live War Room) ---
+    location /socket.io/ {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+}
+
+
+[5] FILE PATHS
+---------------------------------------------
+Project Root:     /var/www/ankyy.com (or similar)
+Frontend Path:    /var/www/ankyy.com/frontend
+Backend Path:     /var/www/ankyy.com/backend
+
+=============================================
+DO NOT SHARE THIS FILE PUBLICLY.
+AI USE ONLY.
+=============================================

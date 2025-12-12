@@ -8,10 +8,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'brand-black': '#050505', // Almost pure black, very deep
-        'brand-grey': '#888888',  // A perfect mid-tone grey
-        'brand-silver': '#E5E5E5', // Very light grey for subtle lines
-        'brand-teal': '#00F5C4',   // Electric teal for accents/buttons
+        'brand-black': '#050505', // Almost pure black
+        'brand-grey': '#A3A3A3',  // LIGHTENED (Was #888888) - Passes Accessibility
+        'brand-silver': '#E5E5E5', 
+        'brand-teal': '#00F5C4',   
       },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
