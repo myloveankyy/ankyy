@@ -1,4 +1,4 @@
-/* --- backend/server.js (Ankyy Brand Edition - No Converter) --- */
+/* --- backend/server.js (Ankyy Brand Edition + Sitemap Engine) --- */
 
 require('dotenv').config();
 const express = require('express');
@@ -42,7 +42,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // --- STATIC PATHS ---
-// We only need uploads for Blog images now. No downloads folder.
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 app.use('/uploads', express.static(uploadDir));
@@ -63,7 +62,6 @@ mongoose.connect(MONGO_URI)
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // --- SCHEMAS ---
-// (We keep FileSchema just in case Admin queries it, but it will be empty locally)
 const FileSchema = new mongoose.Schema({
     id: Number, title: String, filename: String, type: String, 
     date: { type: Date, default: Date.now }, size: String
@@ -108,7 +106,7 @@ const emitStats = async () => {
         const totalViews = totalViewsAgg[0]?.total || 0;
         
         io.to('admin_room').emit('stats_update', {
-            totalFiles: 0, // No local files anymore
+            totalFiles: 0, 
             storageUsage: "0.0",
             blogViews: totalViews,
             recentActivity: [] 
@@ -117,7 +115,7 @@ const emitStats = async () => {
 };
 
 // ======================================================
-// API ROUTES (BLOG ONLY)
+// API ROUTES
 // ======================================================
 
 app.post('/api/upload', upload.single('image'), (req, res) => {
@@ -179,8 +177,53 @@ app.delete('/api/blog/:id', async (req, res) => {
     } catch(e) { res.status(500).json({ success: false }); }
 });
 
-// --- ADMIN PROXY ROUTES (Future: Connect to musicbox.life) ---
-// For now, these return empty to prevent Admin Panel crashes until Phase 2.
 app.get('/api/history', (req, res) => res.json({ success: true, data: [], storage: "0.0" }));
+
+// ======================================================
+// 🗺️ AUTOMATED SITEMAP ENGINE (NEW)
+// ======================================================
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        const baseUrl = 'https://ankyy.com';
+        // 1. Get all PUBLISHED posts
+        const posts = await BlogModel.find({ status: 'published' }).select('slug date').sort({ date: -1 });
+
+        // 2. Start XML Structure
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>${baseUrl}/</loc>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>${baseUrl}/blog</loc>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+`;
+
+        // 3. Loop through Blogs
+        posts.forEach(post => {
+            const safeDate = post.date ? new Date(post.date).toISOString() : new Date().toISOString();
+            xml += `    <url>
+        <loc>${baseUrl}/blog/${post.slug}</loc>
+        <lastmod>${safeDate}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+`;
+        });
+
+        // 4. Close XML & Send
+        xml += `</urlset>`;
+        res.header('Content-Type', 'application/xml');
+        res.send(xml);
+
+    } catch (e) {
+        console.error("Sitemap Error:", e);
+        res.status(500).end();
+    }
+});
 
 server.listen(PORT, () => console.log(`🚀 Ankyy Brand Server running on Port ${PORT}`));
