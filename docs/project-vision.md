@@ -1,12 +1,33 @@
+code
+Markdown
 --- START OF FILE project-vision.md ---
 
 ⭐ ANKYY — BRAND & COMMAND CENTER VISION ⭐
 
 Document Purpose: Strategic blueprint for Ankyy.com. This is the "Headquarters" of the digital empire. It serves as the public face (Brand), the voice (Blog), and the brain (Admin Panel) for all isolated tools like MusicBox.
 
-1. Core Identity & Philosophy
+---
 
-**Role:** The Safe Harbor.
+### 🎨 0. THE "ANKYY AESTHETICS" PROTOCOL (Strict Design Mandate)
+**Note to AI Developers:** Any UI/UX code generated for this project must strictly adhere to these standards. **Do not produce generic designs.**
+
+*   **Vibe:** "Cinematic Minimalist" & "Controlled Power." Think Apple meets a Hacker Terminal.
+*   **Typography:** Strict usage of `Inter` (UI) and `Space Mono` (Data/Code).
+*   **Palette:**
+    *   Backgrounds: Pure White (`#FFFFFF`) or Deepest Black (`#050505`).
+    *   Accents: Electric Teal (`#00F5C4`) or Emerald Green (`#10B981`) for success states.
+    *   Text: High Contrast (No washed-out grays).
+*   **Interaction:**
+    *   Buttons must have hover states (Scale/Shadow).
+    *   Transitions must use `Framer Motion` (Smooth, physics-based).
+    *   **No Default Scrollbars:** Use the custom "thin" CSS scrollbar.
+*   **Layout:** "Industry Level." Generous whitespace, split-screen editors, glassmorphism overlays, and dashboard-style density for data.
+
+---
+
+### 1. Core Identity & Philosophy
+
+**Role:** The Safe Harbor & Command Center.
 **Domain:** https://ankyy.com
 **Primary Goal:** Build high-value SEO traffic, establish personal branding, and host the centralized control systems.
 
@@ -15,81 +36,96 @@ Document Purpose: Strategic blueprint for Ankyy.com. This is the "Headquarters" 
 *   No risky tools (YouTube downloading) run directly on this domain.
 *   Tools are linked externally to "Risk Domains" (e.g., musicbox.life).
 
-**Design Philosophy:**
-*   **Aesthetic:** "Cinematic Minimalist." High contrast, typography-driven, premium feel.
-*   **User Experience:** Information first. Fast loading blogs, impressive portfolio transitions.
+---
 
-2. Technology Stack
+### 2. Technology Stack
 
 **Frontend (Public Site):**
-*   **Framework:** React 18 (CRA)
-*   **Styling:** Tailwind CSS v3.0
-*   **Routing:** React Router v6
-*   **SEO:** React Helmet Async (Meta Tags), JSON-LD schemas.
+*   **Framework:** React 18 (CRA).
+*   **Performance:** Code Splitting (`React.lazy`), Gzip Compression.
+*   **SEO:** `react-helmet-async` (Dynamic Meta Tags), JSON-LD schemas.
+*   **Networking:** Relative API paths (Production hardcoded).
 
-**Admin Panel (God Mode):**
-*   **Framework:** React 18 (Separate Build)
-*   **Real-Time:** Socket.io Client (Listens to remote tools).
-*   **CMS:** React-Quill-New (Rich Text Editing for Blog).
+**Admin Panel ("The Studio"):**
+*   **Framework:** React 18 (Separate Build).
+*   **Editor:** `react-quill-new` (Rich Text + Images).
+*   **Visuals:** `recharts` (Analytics), `lucide-react` (Icons).
+*   **Security:** JWT Decoding, Protected Routes.
 
-**Backend (The API):**
-*   **Runtime:** Node.js + Express
-*   **Database:** MongoDB (Stores Blog Posts, Admin Users, Portfolio Data).
-*   **Images:** Multer (Local upload handling for blog assets).
-*   **Security:** Helmet.js, CORS (Locked to specific domains).
+**Backend (The Fortress):**
+*   **Runtime:** Node.js + Express.
+*   **Database:** MongoDB (Atlas).
+*   **Auth:** "Iron Fortress" Protocol (Bcrypt + JWT). 1/1 Founder Slot.
+*   **Storage:** Local `uploads/` folder (Mapped via Nginx).
 
 **Infrastructure:**
 *   **Server:** DigitalOcean Droplet (Ubuntu 24.04).
-*   **Reverse Proxy:** Nginx (Handles SSL and routing for /admin vs /).
+*   **Reverse Proxy:** Nginx (Highly Customized: Priority Shields `^~`, Caching).
 *   **Process Manager:** PM2.
 
-3. Architecture & Folder Structure
+---
+
+### 3. Architecture & Folder Structure
 
 The project follows a Monorepo structure containing the Brand Site, Admin Panel, and API.
 
-Ankyy_Brand/
+```text
+/var/www/ankyy.com/
 ├── admin/                 # The "God Mode" Dashboard
-│   ├── public/
-│   └── src/               # React Code for Admin
+│   ├── src/App.js         # The "Studio" Logic
+│   └── build/             # Production Assets
 ├── backend/               # The API Node.js Server
-│   ├── uploads/           # Blog images storage
-│   ├── .env               # Secrets (Mongo URI, Port)
-│   └── server.js          # Main Application Logic
+│   ├── uploads/           # Blog images (Served via Nginx Alias)
+│   ├── .env               # Secrets (Mongo URI, JWT_SECRET)
+│   └── server.js          # Core Logic (Auth, Blog, Sitemap)
 ├── frontend/              # The Public Website
-│   ├── public/
-│   └── src/               # React Code for Homepage/Blog
+│   ├── src/pages/         # BlogFeed, Article (Image URL Fixers included)
+│   └── build/             # Production Assets
 ├── docs/                  # Documentation
 │   ├── project-journal.md
 │   └── project-vision.md
-├── .gitignore             # Git Rules
-└── README.md              # Master Manual
-
+└── nginx-production.conf  # Backup of active Server Config
 4. Feature Roadmap
+Phase 1: Foundation (Completed)
 
-**Phase 1: Foundation (Completed)**
-*   [x] "Cinematic" Homepage Design.
-*   [x] Blog Engine (CMS + Frontend Feed).
-*   [x] Admin Panel (Local Stats).
-*   [x] Separation of concerns (MusicBox removed).
+"Cinematic" Homepage Design.
 
-**Phase 2: The "God Mode" Connection (Next Priority)**
-*   [ ] **Remote Monitoring:** Connect Admin Panel to `musicbox.life` via Socket.io/API.
-*   [ ] **Remote Control:** Ability to delete files on MusicBox server from Ankyy Admin.
-*   [ ] **Unified Analytics:** View total traffic across all domains in one dashboard.
+Blog Engine (CMS + Frontend Feed).
 
-**Phase 3: Content & SEO**
-*   [ ] Automated Sitemap generation.
-*   [ ] "Tech Tips" and "Coding" blog content strategy.
-*   [ ] Newsletter integration.
+Separation of concerns (MusicBox removed).
+Phase 2: Security & SEO (Completed)
 
-**Phase 4: Expansion**
-*   [ ] Launch **TeerBook** (Finance Tool) under subdomain.
-*   [ ] Launch **DocuFlow** (SaaS) under subdomain.
+Iron Fortress: Secure Login, Founder-Only Access, Signup Lock.
 
+Automated SEO: Dynamic Sitemap generator + Meta Tag injection.
+
+Performance: 100/100 Optimization (Gzip + Caching).
+
+Admin 2.0: Split-screen "Studio" Editor with Publish Toggles.
+Phase 3: The "God Mode" Connection (Next Priority)
+
+Socket Link: Establish secure WebSocket between Ankyy Admin and musicbox.life.
+
+Live Monitoring: View real-time CPU/Download stats from the remote server.
+
+Remote Kill Switch: Ability to ban IPs or delete files on MusicBox from Ankyy Admin.
+Phase 4: Expansion & Monetization
+
+Newsletter: Integrate email capture on Blog.
+
+Ad Integration: Prepare MusicBox.life for ad slots.
+
+TeerBook: Finance Tool (Subdomain).
+
+DocuFlow: SaaS Tool (Subdomain).
 5. Deployment Strategy
-
-*   **Method:** "Magic Deploy" Script (`./deploy.sh`).
-*   **Workflow:** Local Dev -> Push to GitHub (`ankyy-brand`) -> Pull on Server -> Build -> Restart.
-*   **Domain:** `ankyy.com` (Main), `ankyy.com/admin` (Dashboard).
-
---- END OF FILE ---
+Primary Method: "Reverse Sync" (Server -> Local -> GitHub).
+Why: We often tweak Nginx or Configs directly on the server.
+Build Process:
+Always rebuild both Admin and Frontend after git pull.
+Use pm2 restart ankyy-api for backend changes.
+Domain Mapping:
+ankyy.com -> Frontend Build.
+ankyy.com/admin -> Admin Build.
+ankyy.com/api -> Node.js Backend.
+ankyy.com/uploads -> Backend Images (Nginx Alias).

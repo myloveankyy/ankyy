@@ -1,50 +1,52 @@
---- START OF FILE project-journal.md ---
+🚀 ANKYY EMPIRE — MASTER DEVELOPMENT LOG
 
-🚀 ANKYY BRAND — DEVELOPMENT LOG
-
-**Project:** Ankyy.com (Headquarters)
+**Project:** Ankyy.com (The Headquarters) + MusicBox.life (The Factory)
 **Status:** 🟢 LIVE (Production)
-**Last Major Action:** The "Great Split" Architecture Change.
+**Architecture:** Distributed (Dual-Droplet System)
+**Last Major Action:** Operation "Apex Predator" (Security, SEO, & Admin 2.0).
 
 ---
 
-### ENTRY: The Great Split (Migration to Empire Architecture)
-**Date:** Friday, December 12, 2025
-**Goal:** Separate the risky "MusicBox" tool from the main "Ankyy" brand to ensure long-term stability and SEO safety.
+### 📂 CURRENT SYSTEM ARCHITECTURE
 
-**Actions Taken:**
-1.  **Codebase Surgery:**
-    *   Cloned the original codebase into `Ankyy_Brand`.
-    *   **Backend:** Removed `yt-dlp`, `ffmpeg`, and `queue` systems. Kept Blog Schema, Admin Logic, and MongoDB connection.
-    *   **Frontend:** Removed internal MusicBox routes. Updated `ToolsGrid` to link externally to `musicbox.life`.
-2.  **Infrastructure:**
-    *   Wiped the old DigitalOcean folder.
-    *   Cloned the new clean `ankyy-brand` repository.
-    *   Configured Nginx to handle the clean path paths.
-3.  **Outcome:**
-    *   `ankyy.com` is now a pure Brand/Blog site.
-    *   It is lightweight (no heavy processing).
-    *   It is safe from potential IP bans related to YouTube downloading.
+**1. The Headquarters (Ankyy.com)**
+*   **Role:** Safe Harbor, Brand Identity, Blog Engine, Command Center.
+*   **Server:** DigitalOcean Droplet A (Clean IP).
+*   **Tech Stack:** React 18 (Frontend), Node.js (API), MongoDB (Atlas), Nginx (Reverse Proxy).
+*   **Security:** "Iron Fortress" Auth (Bcrypt/JWT), Founder-Only Access (1/1 Slot).
+*   **SEO:** Automated Sitemap Engine (`/sitemap.xml`), React Helmet Async (Meta Tags).
 
-**Current System State:**
-*   **Blog:** Fully functional (Reading + Writing via Admin).
-*   **Admin:** Live at `/admin`, currently showing local stats only.
-*   **MusicBox Link:** Redirects correctly to the new external domain.
+**2. The Factory (MusicBox.life) [Remote Node]**
+*   **Role:** Heavy Compute, YouTube Conversion, High-Risk Operations.
+*   **Server:** DigitalOcean Droplet B (Expendable IP).
+*   **Status:** Live & Isolated. (Connection to Admin Panel Pending).
 
-**Next Steps:**
-1.  **Connect God Mode:** Update the Admin Panel to fetch real-time data from the remote `musicbox.life` server.
+**3. Folder Structure (Standardized)**
+/var/www/ankyy.com/
+├── admin/                 # The "God Mode" Dashboard (React)
+│   ├── src/App.js         # Contains "The Studio" Editor & Auth Logic
+│   └── build/             # Production Assets
+├── backend/               # The Node.js API (Port 5000)
+│   ├── uploads/           # Blog Images (Mapped via Nginx)
+│   ├── server.js          # Core Logic (Auth, Blog, Sitemap)
+│   └── .env               # Secrets (Mongo URI, JWT Key)
+├── frontend/              # The Public Website (React)
+│   ├── src/pages/         # BlogFeed, Article, HomePage
+│   └── build/             # Production Assets
+└── nginx-production.conf  # Backup of active Server Config
 
 ---
 
-### ENTRY: Operation "Apex Predator" (SEO, Speed & The Iron Fortress)
+### 📝 ENTRY: Operation "Apex Predator" (SEO, Speed & The Iron Fortress)
 **Date:** Friday, December 12, 2025
 **Goal:** Transform Ankyy.com into an industry-grade publishing empire with 100/100 performance, automated SEO, and a military-grade Admin Panel.
 
 **Actions Taken:**
 
 1.  **Architecture Standardization:**
-    *   Renamed server directory from `Ankyy_Brand` to `/var/www/ankyy.com` to eliminate confusion.
-    *   Configured Nginx with `try_files` to fix the "Refresh 404" error on the Blog route.
+    *   Renamed server directory from `Ankyy_Brand` to `/var/www/ankyy.com` to eliminate path confusion.
+    *   **Reverse Sync Workflow Established:** We edit on Server -> Pull to Local.
+    *   Configured Nginx with `try_files` to fix the "Refresh 404" error on SPA routes.
 
 2.  **Performance Engineering (The "Perfect 100"):**
     *   **Frontend:** Implemented `React.lazy` and `Suspense` (Code Splitting) to separate the heavy 3D Homepage from the lightweight Blog.
@@ -65,19 +67,64 @@
     *   **UI Overhaul:** Deployed a Split-Screen WYSIWYG Editor with real-time metadata controls (Slug, Tags, Excerpt).
     *   **Publishing Workflow:** Added Draft/Public toggle status.
     *   **Image Handling:** Created the `getImageUrl` helper to automatically route image requests to the Live Server, fixing broken images on Localhost.
+    *   **Media Mapping:** Configured Nginx `location ^~ /uploads/` to map public URLs to the secure backend storage.
 
 **Technical Challenges Solved:**
 *   **The "Nginx Regex Trap":** Admin CSS/JS files were returning 404s because the global `.css` caching rule was overriding the `/admin` alias. Solved by adding the `^~` modifier.
 *   **The "Relative Path" Trap:** Admin API calls were failing in production. Solved by hardcoding `https://ankyy.com` as the API base.
-*   **The "Permission Cycle":** `npm run build` as root was locking out Nginx. Fixed via `chown www-data` and permission resets.
+*   **The "Permission Cycle":** `npm run build` as root was locking out Nginx (`www-data`). Fixed via recursive `chown` and `chmod` commands.
+*   **The "Missing Image" Mystery:** Local uploads were not appearing on Live. Solved by re-uploading via Production Admin and fixing Nginx Alias mapping.
 
 **Current System State:**
-*   **Blog:** 🟢 Live & Indexable.
+*   **Blog:** 🟢 Live & Indexable. Images loading correctly.
 *   **Admin:** 🟢 Secured (Founder Mode Active).
 *   **Performance:** 🟢 Optimized (Lazy Loaded + Gzipped).
 
-**Next Steps:**
-1.  **Connect "God Mode":** Establish the secure socket link between this Admin Panel and the remote `musicbox.life` server to monitor downloads.
-2.  **Monetization:** Begin implementation of Ad slots on the remote tools.
+---
+
+### 🔮 FUTURE ROADMAP (What is Pending)
+
+**Phase 1: Connect "God Mode" (High Priority)**
+*   **Goal:** Establish a secure WebSocket link between Ankyy Admin and `musicbox.life` server.
+*   **Action:**
+    *   Update MusicBox backend to emit CPU/Download stats via Socket.io.
+    *   Update Ankyy Admin Dashboard to listen to these events.
+    *   Display "Server Health" widgets in the Admin Panel.
+
+**Phase 2: Monetization Integration**
+*   **Goal:** Generate revenue from the MusicBox traffic.
+*   **Action:**
+    *   Add AdSense/PropellerAds slots to `musicbox.life` frontend.
+    *   Implement "Premium Key" validation logic in MusicBox backend.
+
+**Phase 3: The Mobile App (Long Term)**
+*   **Goal:** Wrap the `musicbox.life` functionality into a PWA or React Native app.
+
+---
+
+### ⚙️ ESTABLISHED WORKFLOWS
+
+**1. The "Reverse Sync" (Server to Local)**
+*   *Use when fixing bugs directly on Production via PuTTY.*
+    1.  Commit changes on Server: `git add . && git commit -m "Hotfix"`
+    2.  Push from Server: `git push origin main`
+    3.  Pull to Local VS Code: `git pull origin main`
+
+**2. The "Standard Deploy" (Local to Server)**
+*   *Use when building new features.*
+    1.  Code Locally -> Test (`npm start`).
+    2.  Push: `git push origin main`
+    3.  Login to Server (PuTTY).
+    4.  Pull: `git pull`
+    5.  Rebuild: `cd admin && npm install && npm run build` (Repeat for frontend if needed).
+    6.  Restart: `pm2 restart ankyy-api` (If backend changed).
+
+**3. The "Permission Fix" (Emergency)**
+*   *Use if Nginx throws 403/404 errors after a build.*
+    ```bash
+    sudo chown -R www-data:www-data /var/www/ankyy.com
+    sudo chmod -R 755 /var/www/ankyy.com
+    sudo systemctl restart nginx
+    ```
 
 --- END OF FILE ---

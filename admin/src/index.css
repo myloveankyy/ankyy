@@ -1,62 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* PREMIUM SCROLLBAR */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent; 
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #E5E7EB; 
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF; 
-}
-
-/* Dark scrollbar for terminal */
-.dark-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.dark-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.dark-scrollbar::-webkit-scrollbar-thumb {
-  background: #374151; 
-  border-radius: 10px;
-}
-
 body {
-  background-color: #F3F4F6;
-  overflow: hidden; /* App handles scrolling */
+  font-family: 'Inter', sans-serif;
+  background-color: #F8FAFC;
+  color: #0F172A;
 }
 
-/* --- PREMIUM SCROLLBARS --- */
-@layer utilities {
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #E5E7EB;
-    border-radius: 100vh;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #9CA3AF;
-  }
-  
-  /* Dark mode scrollbar for terminal */
-  .dark-scrollbar::-webkit-scrollbar-thumb {
-    background: #374151;
-  }
-  .dark-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #4B5563;
-  }
+/* === GHOST CMS STYLE EDITOR === */
+
+/* 1. Hide the Toolbar border and make it sticky if needed, or flat */
+.ghost-editor .ql-toolbar {
+    border: none !important;
+    padding: 0 !important;
+    margin-bottom: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+}
+
+/* 2. Style the Toolbar Buttons to look professional (Black on hover) */
+.ghost-editor .ql-toolbar button {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.ghost-editor .ql-toolbar button:hover {
+    background-color: #F1F5F9;
+    color: black;
+}
+.ghost-editor .ql-toolbar .ql-active {
+    background-color: #F1F5F9;
+    color: black;
+}
+.ghost-editor .ql-toolbar.ql-snow .ql-picker-label {
+    padding-left: 0;
+}
+
+/* 3. The Content Area - Remove Borders, Fix Typography */
+.ghost-editor .ql-container {
+    border: none !important;
+    font-family: 'Inter', sans-serif; /* Keep it sans-serif for modern look */
+    font-size: 16px;
+    color: #334155;
+    min-height: 50vh;
+}
+
+.ghost-editor .ql-editor {
+    padding: 0 !important;
+    line-height: 1.75;
+}
+
+/* 4. Headings & Elements inside the editor */
+.ghost-editor .ql-editor h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+}
+.ghost-editor .ql-editor h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1E293B;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+.ghost-editor .ql-editor p {
+    margin-bottom: 1.25rem;
+}
+.ghost-editor .ql-editor blockquote {
+    border-left: 3px solid #0F172A;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #475569;
+    background: #F8FAFC;
+    padding: 1rem;
+    border-radius: 4px;
+}
+.ghost-editor .ql-editor img {
+    border-radius: 6px;
+    margin: 1.5rem 0;
+    max-width: 100%;
+}
+
+/* Placeholder */
+.ghost-editor .ql-editor.ql-blank::before {
+    color: #94A3B8;
+    font-style: normal;
+    left: 0;
 }
