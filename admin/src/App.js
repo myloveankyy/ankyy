@@ -1,22 +1,22 @@
-/* --- admin/src/App.js (Fortress Edition) --- */
+/* --- admin/src/App.js (Fortress Edition + Image Fix) --- */
 
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { io } from 'socket.io-client';
 import ReactQuill from 'react-quill-new'; 
 import 'react-quill-new/dist/quill.snow.css'; 
-import { AreaChart, Area, Tooltip, ResponsiveContainer, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 import { 
   LayoutGrid, FolderOpen, Radio, Settings, Search, Bell, 
   Trash2, ArrowUpRight, Database, Eye, PenTool, Save, Image as ImageIcon,
   HardDrive, CheckCircle2, Globe, Cpu, LogOut, Lock, UserPlus, ShieldAlert
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios'; // For secure API calls
+import axios from 'axios'; 
 
-// --- CONFIGURATION ---
-const isLocal = window.location.hostname === 'localhost';
-const API_URL = isLocal ? 'http://localhost:5000' : '';
-const SOCKET_URL = isLocal ? 'http://localhost:5000' : '/';
+// === PRODUCTION CONFIGURATION ===
+// We hardcode this to ensure it always hits the live server
+const API_URL = 'https://ankyy.com';
+const SOCKET_URL = 'https://ankyy.com';
 const socket = io(SOCKET_URL);
 
 // --- AUTH UTILS ---
@@ -25,18 +25,67 @@ const setAuthToken = (token) => {
     else delete axios.defaults.headers.common['Authorization'];
 };
 
+// --- HELPER: IMAGE URL FIXER ---
+// This ensures images load on localhost by pulling them from the live server
+const getImageUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path; // Already a full URL
+    return `https://ankyy.com${path}`; // Prepend domain for relative paths
+};
+
+// --- COMPONENT: IMAGE UPLOADER ---
+const ImageUploader = ({ currentImage, onUpload }) => {
+    const fileInputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('image', file);
+        setUploading(true);
+        try {
+            const res = await axios.post(`${API_URL}/api/upload`, formData);
+            if (res.data.success) onUpload(res.data.url);
+        } catch (error) { console.error("Upload failed", error); } 
+        finally { setUploading(false); }
+    };
+
+    return (
+        <div onClick={() => fileInputRef.current.click()} className="group relative w-full h-32 rounded-2xl border-2 border-dashed border-gray-200 hover:border-black hover:bg-gray-50 transition-all cursor-pointer overflow-hidden flex flex-col items-center justify-center bg-white">
+            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*" />
+            {uploading ? (
+                <div className="flex flex-col items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                </div>
+            ) : currentImage ? (
+                <>
+                    <img src={getImageUrl(currentImage)} alt="Cover" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-white text-[10px] font-bold uppercase tracking-wider">Change</span>
+                    </div>
+                </>
+            ) : (
+                <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-black transition-colors">
+                    <ImageIcon size={20} />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Upload Cover</span>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ==========================================
 // 🔐 AUTH SCREEN (LOGIN / FOUNDER SETUP)
 // ==========================================
 const AuthScreen = ({ onLogin }) => {
-    const [mode, setMode] = useState('login'); // 'login' or 'setup'
+    const [mode, setMode] = useState('login'); 
     const [founderExists, setFounderExists] = useState(true);
     const [formData, setFormData] = useState({ username: '', password: '', name: '', email: '', mobile: '+91 ' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        // Check if the Throne is occupied
         axios.get(`${API_URL}/api/auth/status`).then(res => {
             setFounderExists(res.data.founderExists);
         });
@@ -55,7 +104,6 @@ const AuthScreen = ({ onLogin }) => {
                     onLogin(res.data.user);
                 }
             } else {
-                // Founder Setup
                 const res = await axios.post(`${API_URL}/api/auth/setup-founder`, formData);
                 if (res.data.success) {
                     alert("Empire Initialized. Please Login.");
@@ -72,29 +120,14 @@ const AuthScreen = ({ onLogin }) => {
 
     return (
         <div className="min-h-screen bg-white flex items-center justify-center p-6 font-sans">
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                className="max-w-md w-full"
-            >
-                {/* Brand Header */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full">
                 <div className="text-center mb-10">
                     <h1 className="text-5xl font-black text-black tracking-tighter mb-2">ANKYY</h1>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em]">Command Center v2.0</p>
                 </div>
-
-                {/* Form Card */}
                 <div className="bg-white border border-gray-200 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-3xl p-8 md:p-10 relative overflow-hidden">
-                    
-                    {/* Security Badge */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gray-200 via-indigo-500 to-gray-200"></div>
-
-                    {error && (
-                        <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-600 text-xs font-bold">
-                            <ShieldAlert size={14} /> {error}
-                        </div>
-                    )}
-
+                    {error && <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-600 text-xs font-bold"><ShieldAlert size={14} /> {error}</div>}
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {mode === 'setup' && (
                             <>
@@ -105,28 +138,18 @@ const AuthScreen = ({ onLogin }) => {
                                 <input required type="email" placeholder="Official Email" className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-black focus:outline-none transition-all" value={formData.email} onChange={e=>setFormData({...formData, email: e.target.value})} />
                             </>
                         )}
-
                         <input required placeholder="Username" className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-black focus:outline-none transition-all" value={formData.username} onChange={e=>setFormData({...formData, username: e.target.value})} />
-                        
                         <input required type="password" placeholder="Passcode" className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-black focus:outline-none transition-all" value={formData.password} onChange={e=>setFormData({...formData, password: e.target.value})} />
-
                         <button disabled={loading} className="w-full py-4 bg-black text-white rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-gray-900 transition-transform active:scale-95 disabled:opacity-50">
                             {loading ? "Authenticating..." : mode === 'login' ? "Access Dashboard" : "Initialize Empire"}
                         </button>
                     </form>
-
-                    {/* Founder Switcher */}
                     {!founderExists && mode === 'login' && (
                         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                            <p className="text-xs text-gray-400 mb-3">System Not Initialized.</p>
-                            <button onClick={() => setMode('setup')} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 mx-auto">
-                                <Lock size={12} /> Setup Founder Account (1/1)
-                            </button>
+                            <button onClick={() => setMode('setup')} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 mx-auto"><Lock size={12} /> Setup Founder Account (1/1)</button>
                         </div>
                     )}
                 </div>
-                
-                <p className="text-center text-[10px] text-gray-300 font-bold mt-8 uppercase tracking-widest">Secured by Ankyy Protocol</p>
             </motion.div>
         </div>
     );
@@ -154,7 +177,6 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, user }) => {
                     <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">{user.role === 'founder' ? 'Founder Access' : 'Writer Access'}</p>
                 </div>
             </div>
-            
             <div className="flex flex-col gap-2">
                 {menuItems.filter(i => i.role === 'all' || i.role === user.role).map((item) => (
                     <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all ${activeTab === item.id ? 'text-black bg-gray-100 font-bold' : 'text-gray-500 hover:bg-gray-50'}`}>
@@ -163,7 +185,6 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout, user }) => {
                 ))}
             </div>
         </div>
-
         <div className="p-6">
             <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl transition-colors">
                 <LogOut size={18} /> <span className="hidden lg:block text-sm font-bold">Disconnect</span>
@@ -200,62 +221,195 @@ const WriterManager = () => {
     );
 };
 
-// --- CMS EDITOR (Reused from previous, just updated API calls to use axios) ---
+// --- COMPONENT: CMS EDITOR V2 (THE STUDIO) ---
 const CMSEditor = ({ onLog }) => {
     const [posts, setPosts] = useState([]);
     const [activePost, setActivePost] = useState(null);
+    
+    // Editor State
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [slug, setSlug] = useState('');
     const [tags, setTags] = useState('');
     const [excerpt, setExcerpt] = useState('');
-    const [status, setStatus] = useState('draft');
+    const [status, setStatus] = useState('draft'); // 'draft' | 'published'
     const [featuredImage, setFeaturedImage] = useState('');
-    const [isSidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => { loadPosts(); }, []);
+    
+    // Auto-generate slug from title (only for new posts)
+    useEffect(() => {
+        if (!activePost?._id && title && !slug) {
+            setSlug(title.toLowerCase().trim().replace(/[\s\W-]+/g, '-'));
+        }
+    }, [title, slug, activePost]);
+
     const loadPosts = () => axios.get(`${API_URL}/api/blog`).then(res => setPosts(res.data.data));
 
+    const handleEdit = (post) => {
+        setActivePost(post); setTitle(post.title); setContent(post.content); 
+        setSlug(post.slug); setTags(post.tags?.join(', ') || ''); 
+        setExcerpt(post.excerpt || ''); setStatus(post.status); setFeaturedImage(post.featuredImage || '');
+    };
+
+    const handleNew = () => {
+        setActivePost({ _id: null }); setTitle(''); setContent(''); 
+        setSlug(''); setTags(''); setExcerpt(''); setStatus('draft'); setFeaturedImage('');
+    };
+
     const handleSave = async () => {
-        if(!title) return;
+        if(!title) return alert("Title is required");
         try {
-            await axios.post(`${API_URL}/api/blog`, {
-                _id: activePost?._id, title, content, slug, excerpt, status, featuredImage,
+            const payload = {
+                _id: activePost._id, title, content, slug, excerpt, status, featuredImage,
                 tags: tags.split(',').map(t => t.trim()).filter(t => t)
-            });
-            onLog(`Saved: ${title}`, 'success'); setActivePost(null); loadPosts();
+            };
+            await axios.post(`${API_URL}/api/blog`, payload);
+            onLog(`Saved: ${title}`, 'success');
+            if(!activePost._id) setActivePost(null); // Return to list if new
+            loadPosts();
         } catch(e) { onLog('Save Failed', 'error'); }
     };
-    
-    // ... (Use same UI structure as previous, just compacted for brevity in this snippet. 
-    // The key is it now uses `axios` which carries the Auth Token automatically)
 
-    return (
-        <div className="h-full flex flex-col">
-            {!activePost ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <button onClick={() => setActivePost({})} className="h-64 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-gray-400 hover:border-black hover:text-black transition-colors">
-                        <PenTool size={32} className="mb-2" /> <span className="font-bold">New Story</span>
+    const handleDelete = async (id, e) => {
+        e.stopPropagation();
+        if(!window.confirm("Delete this story?")) return;
+        await axios.delete(`${API_URL}/api/blog/${id}`);
+        loadPosts();
+    };
+
+    // --- VIEW 1: THE LIST (Grid of Stories) ---
+    if (!activePost) {
+        return (
+            <div className="h-full flex flex-col">
+                <div className="flex justify-between items-end mb-8 px-2">
+                    <div>
+                        <h2 className="text-3xl font-black text-gray-900 tracking-tighter">The Studio</h2>
+                        <p className="text-gray-400 font-bold text-xs uppercase tracking-wider mt-1">Manage Empire Content</p>
+                    </div>
+                    <button onClick={handleNew} className="px-6 py-3 bg-black text-white rounded-xl text-xs font-bold shadow-xl shadow-gray-200 hover:scale-105 transition-transform flex items-center gap-2">
+                        <PenTool size={14} /> New Story
                     </button>
-                    {posts.map(post => (
-                        <div key={post._id} onClick={()=>{setActivePost(post); setTitle(post.title); setContent(post.content); setSlug(post.slug)}} className="h-64 bg-white p-6 rounded-3xl border border-gray-100 hover:shadow-lg transition-all cursor-pointer">
-                            <h3 className="font-bold text-lg mb-2">{post.title}</h3>
-                            <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded ${post.status==='published'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-500'}`}>{post.status}</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 custom-scrollbar overflow-y-auto pr-2">
+                    {posts.map((post) => (
+                        <div key={post._id} onClick={() => handleEdit(post)} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all cursor-pointer overflow-hidden flex flex-col h-[320px]">
+                            {/* Image Area */}
+                            <div className="h-40 bg-gray-50 relative overflow-hidden">
+                                {post.featuredImage ? (
+                                    <img src={getImageUrl(post.featuredImage)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-200 font-black text-4xl uppercase opacity-20">Ankyy</div>
+                                )}
+                                <div className="absolute top-3 left-3">
+                                    <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm ${post.status === 'published' ? 'bg-emerald-500 text-white' : 'bg-white/80 text-gray-500'}`}>
+                                        {post.status}
+                                    </span>
+                                </div>
+                            </div>
+                            {/* Content Area */}
+                            <div className="p-6 flex flex-col flex-1">
+                                <h3 className="font-bold text-lg text-gray-900 leading-tight line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">{post.title}</h3>
+                                <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{post.excerpt || "No description provided."}</p>
+                                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
+                                    <span className="text-[10px] font-bold text-gray-300 uppercase">{new Date(post.date).toLocaleDateString()}</span>
+                                    <button onClick={(e) => handleDelete(post._id, e)} className="text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </div>
-            ) : (
-                <div className="h-full flex flex-col">
-                    <div className="flex justify-between mb-4">
-                        <button onClick={()=>setActivePost(null)} className="font-bold text-sm text-gray-500">← Back</button>
-                        <button onClick={handleSave} className="bg-black text-white px-6 py-2 rounded-xl font-bold text-sm">Save</button>
+            </div>
+        );
+    }
+
+    // --- VIEW 2: THE EDITOR (Split Screen) ---
+    return (
+        <div className="h-full flex flex-col">
+            {/* Toolbar */}
+            <header className="flex items-center justify-between py-3 mb-4 bg-white/50 backdrop-blur-md rounded-2xl border border-white/40 px-4 shadow-sm sticky top-0 z-30">
+                <button onClick={() => setActivePost(null)} className="text-xs font-bold text-gray-500 hover:text-black flex items-center gap-2">
+                    <ArrowUpRight size={16} className="rotate-[-135deg]" /> Back
+                </button>
+                <div className="flex items-center gap-4">
+                     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${status === 'published' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
+                        <div className={`w-2 h-2 rounded-full ${status === 'published' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                        {status === 'published' ? 'Live on Site' : 'Draft Mode'}
+                     </div>
+                    <button onClick={handleSave} className="bg-black text-white px-5 py-2 rounded-xl text-xs font-bold hover:scale-105 transition-transform shadow-lg flex items-center gap-2">
+                        <Save size={14} /> Save Changes
+                    </button>
+                </div>
+            </header>
+
+            <div className="flex-1 flex gap-6 overflow-hidden">
+                {/* LEFT: Writing Canvas */}
+                <div className="flex-1 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                    <div className="p-8 pb-0">
+                        <input 
+                            value={title} 
+                            onChange={e => setTitle(e.target.value)} 
+                            placeholder="Type your title here..." 
+                            className="w-full text-4xl font-black text-gray-900 placeholder-gray-200 outline-none bg-transparent"
+                        />
                     </div>
-                    <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Title" className="text-4xl font-black mb-4 outline-none bg-transparent" />
-                    <div className="flex-1 bg-white rounded-2xl overflow-hidden border border-gray-200">
-                        <ReactQuill theme="snow" value={content} onChange={setContent} className="h-full" />
+                    <div className="flex-1 overflow-hidden">
+                        <ReactQuill 
+                            theme="snow" 
+                            value={content} 
+                            onChange={setContent} 
+                            className="h-full"
+                            modules={{
+                                toolbar: [
+                                    [{ 'header': [2, 3, false] }],
+                                    ['bold', 'italic', 'blockquote', 'code-block'],
+                                    [{'list': 'ordered'}, {'list': 'bullet'}],
+                                    ['link', 'image', 'clean']
+                                ]
+                            }}
+                        />
                     </div>
                 </div>
-            )}
+
+                {/* RIGHT: Inspector Panel */}
+                <div className="w-80 flex-shrink-0 overflow-y-auto custom-scrollbar pb-10 space-y-5">
+                    
+                    {/* 1. Publishing Control */}
+                    <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Visibility</h4>
+                        <div className="flex bg-gray-50 p-1 rounded-xl">
+                            <button onClick={()=>setStatus('draft')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${status==='draft' ? 'bg-white shadow-sm text-black' : 'text-gray-400'}`}>Draft</button>
+                            <button onClick={()=>setStatus('published')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${status==='published' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400'}`}>Public</button>
+                        </div>
+                    </div>
+
+                    {/* 2. Cover Image */}
+                    <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Cover Art</h4>
+                        <ImageUploader currentImage={featuredImage} onUpload={setFeaturedImage} />
+                    </div>
+
+                    {/* 3. Metadata */}
+                    <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">URL Slug</label>
+                            <div className="flex items-center bg-gray-50 rounded-xl px-3 border border-transparent focus-within:border-indigo-100 focus-within:bg-white transition-all">
+                                <span className="text-gray-400 text-xs select-none">/</span>
+                                <input value={slug} onChange={e=>setSlug(e.target.value)} className="w-full py-2.5 bg-transparent text-xs font-mono font-bold text-indigo-600 outline-none ml-1" />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Tags (Comma)</label>
+                            <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="tech, news" className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-xs font-bold text-gray-900 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-50 border border-transparent transition-all" />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 block">Excerpt</label>
+                            <textarea value={excerpt} onChange={e=>setExcerpt(e.target.value)} rows={3} placeholder="Short summary..." className="w-full px-4 py-2.5 bg-gray-50 rounded-xl text-xs font-medium text-gray-700 outline-none focus:bg-white focus:ring-2 focus:ring-indigo-50 border border-transparent transition-all resize-none" />
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
@@ -312,6 +466,25 @@ function App() {
             {activeTab === 'writers' && user.role === 'founder' && (
                 <motion.div key="writers" initial={{opacity:0}} animate={{opacity:1}} className="h-full">
                     <WriterManager />
+                </motion.div>
+            )}
+            {activeTab === 'live' && user.role === 'founder' && (
+                 <motion.div key="live" initial={{opacity:0}} animate={{opacity:1}} className="bg-[#0f1115] text-gray-300 p-8 rounded-[32px] font-mono text-xs h-full flex flex-col shadow-2xl border border-gray-800">
+                    <div className="flex items-center justify-between border-b border-gray-800 pb-4 mb-4">
+                        <span className="text-gray-600 flex items-center gap-2"><Cpu size={12}/> root@ankyy-server:~</span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto dark-scrollbar pr-2 space-y-2">
+                        {logs.map((l, i) => (
+                            <div key={i} className="flex gap-4 hover:bg-white/5 p-1 rounded px-2">
+                                <span className="text-gray-600 shrink-0 w-20">{l.time}</span>
+                                <span className={`${l.type === 'error' ? 'text-red-400' : l.type === 'success' ? 'text-emerald-400' : 'text-blue-300'}`}>
+                                    {l.type === 'success' && '➜ '}
+                                    {l.msg}
+                                </span>
+                            </div>
+                        ))}
+                        <div className="animate-pulse text-gray-500 mt-2">_</div>
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>
