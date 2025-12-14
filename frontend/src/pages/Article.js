@@ -7,6 +7,9 @@ import { ArrowLeft, Share2, Calendar, Clock, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 
+// 🔴 CRITICAL FIX: Point to Production API
+const API_URL = 'https://ankyy.com'; 
+
 const Article = () => {
     const { slug } = useParams();
     const [post, setPost] = useState(null);
@@ -22,13 +25,19 @@ const Article = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        fetch(`http://localhost:5000/api/blog/${slug}`)
+        // 🔴 FIX: Use API_URL instead of localhost
+        fetch(`${API_URL}/api/blog/${slug}`)
             .then(res => res.json())
             .then(data => {
-                if (data.success) setPost(data.data);
+                // Handle different API response structures (sometimes it's data.data, sometimes just data)
+                const articleData = data.data || data; 
+                setPost(articleData);
                 setLoading(false);
             })
-            .catch(() => setLoading(false));
+            .catch((err) => {
+                console.error("Fetch error:", err);
+                setLoading(false);
+            });
     }, [slug]);
 
     if (loading) return (
@@ -39,7 +48,11 @@ const Article = () => {
     
     if (!post) return <div className="min-h-screen bg-white flex items-center justify-center font-bold text-2xl">404: Signal Lost</div>;
 
-    const readTime = Math.ceil(post.content.split(/\s+/).length / 200);
+    // Safety check for content
+    const content = post.content || "";
+    const readTime = Math.ceil(content.split(/\s+/).length / 200);
+    // 🔴 FIX: Ensure image URL is absolute
+    const imageUrl = post.featuredImage ? `${API_URL}${post.featuredImage}` : null;
 
     return (
         <div ref={containerRef} className="min-h-screen bg-white font-sans selection:bg-black selection:text-white">
@@ -49,11 +62,17 @@ const Article = () => {
 
             {/* --- NAVIGATION (Glass) --- */}
             <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center transition-all duration-300">
-                <Link to="/blog" className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg hover:scale-105 transition-transform group">
+                <Link to="/" className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-lg hover:scale-105 transition-transform group">
                     <ArrowLeft size={16} className="text-black group-hover:-translate-x-1 transition-transform" />
                     <span className="text-xs font-bold text-black uppercase tracking-wider">Back</span>
                 </Link>
-                <button className="bg-white/80 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg hover:scale-110 transition-transform text-black">
+                <button 
+                    onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert("Link copied to clipboard!");
+                    }}
+                    className="bg-white/80 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg hover:scale-110 transition-transform text-black"
+                >
                     <Share2 size={18} />
                 </button>
             </nav>
@@ -66,9 +85,9 @@ const Article = () => {
                     style={{ y: yRange, opacity: opacityRange }}
                     className="absolute inset-0 z-0"
                 >
-                    {post.featuredImage ? (
+                    {imageUrl ? (
                         <img 
-                            src={post.featuredImage} 
+                            src={imageUrl} 
                             alt={post.title} 
                             className="w-full h-full object-cover"
                             loading="eager"
@@ -109,7 +128,10 @@ const Article = () => {
 
                         {/* Metadata */}
                         <div className="flex items-center gap-6 text-white/80 text-xs md:text-sm font-bold tracking-wide">
-                            <span className="flex items-center gap-2"><Calendar size={14} /> {format(new Date(post.createdAt || post.date), 'MMM d, yyyy')}</span>
+                            <span className="flex items-center gap-2">
+                                <Calendar size={14} /> 
+                                {post.date ? format(new Date(post.date), 'MMM d, yyyy') : 'Recently'}
+                            </span>
                             <span className="w-1 h-1 bg-white/50 rounded-full"></span>
                             <span className="flex items-center gap-2"><Clock size={14} /> {readTime} min read</span>
                         </div>
@@ -124,7 +146,7 @@ const Article = () => {
                 <div className="max-w-3xl mx-auto mb-12 flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
                     <Link to="/" className="hover:text-black transition-colors">Home</Link>
                     <ChevronRight size={12} />
-                    <Link to="/blog" className="hover:text-black transition-colors">Blog</Link>
+                    <Link to="/" className="hover:text-black transition-colors">Blog</Link>
                     <ChevronRight size={12} />
                     <span className="text-indigo-600">Reading</span>
                 </div>
@@ -140,7 +162,7 @@ const Article = () => {
                         prose-blockquote:border-l-4 prose-blockquote:border-indigo-600 prose-blockquote:bg-gray-50 prose-blockquote:py-6 prose-blockquote:px-8 prose-blockquote:rounded-r-2xl prose-blockquote:italic
                         prose-strong:text-gray-900 prose-strong:font-black
                         prose-li:text-gray-600"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
                     />
 
                     {/* Footer / Share */}
@@ -149,7 +171,13 @@ const Article = () => {
                             Published by <span className="text-black font-bold">Ankyy Media</span>
                         </p>
                         <div className="flex gap-4">
-                            <button className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-full text-sm font-bold transition-colors flex items-center gap-2">
+                            <button 
+                                onClick={() => {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    alert("Link copied!");
+                                }}
+                                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-full text-sm font-bold transition-colors flex items-center gap-2"
+                            >
                                 <Share2 size={16} /> Share Article
                             </button>
                         </div>
