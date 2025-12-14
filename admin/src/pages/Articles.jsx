@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { 
     Plus, ArrowLeft, Search, Settings, Image as ImageIcon, 
     Globe, Hash, X, BarChart3, AlertCircle, CheckCircle2, 
-    Sparkles, Copy, Share2, Twitter, Linkedin, Check, ChevronRight, Layout
+    Sparkles, Copy, Twitter, Linkedin, Check, ChevronRight, Rocket
 } from 'lucide-react';
 
 const API_URL = 'https://ankyy.com';
@@ -114,9 +114,20 @@ const Articles = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    // --- GLOBAL STYLES FOR SCROLLBAR ---
+    const globalStyles = `
+        /* Custom Scrollbar Logic */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark-scroll ::-webkit-scrollbar-thumb { background: #475569; }
+    `;
+
     // --- VIEW 1: DATA GRID (List) ---
     if (view === 'list') return (
         <div className="flex flex-col h-full bg-slate-50/50">
+            <style>{globalStyles}</style>
             {/* Header */}
             <div className="h-20 px-8 flex items-center justify-between shrink-0 bg-white border-b border-slate-200">
                 <div>
@@ -177,104 +188,116 @@ const Articles = () => {
         </div>
     );
 
-    // --- VIEW 2: EDITOR (FULL SCREEN MODE) ---
-    // Note: 'fixed inset-0 z-50' forces this over the Sidebar/Header
+    // --- VIEW 2: EDITOR (FULL SCREEN GOD MODE) ---
     return (
         <div className="fixed inset-0 z-50 flex h-full bg-white overflow-hidden">
-            
-            {/* SUCCESS MODAL (SEXIER VERSION) */}
+            <style>{globalStyles}</style>
+
+            {/* --- THE "DARK PRISM" VICTORY MODAL --- */}
             <AnimatePresence>
                 {showSuccessModal && lastSavedPost && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        {/* Deep Blur Backdrop */}
+                        {/* 1. The Backdrop: Deep Dark Blur */}
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl"
+                            className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xl"
                             onClick={() => setShowSuccessModal(false)}
                         />
                         
-                        {/* Modal Card with Glow */}
+                        {/* 2. The Card: Glowing Dark Mode */}
                         <motion.div 
-                            initial={{ scale: 0.9, opacity: 0, y: 40 }} 
+                            initial={{ scale: 0.8, opacity: 0, y: 50 }} 
                             animate={{ scale: 1, opacity: 1, y: 0 }} 
-                            exit={{ scale: 0.9, opacity: 0, y: 40 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                            className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden ring-1 ring-white/20"
+                            exit={{ scale: 0.8, opacity: 0, y: 50 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            className="relative bg-[#0F172A] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-white/10"
                         >
-                            {/* Ambient Glow behind card */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-indigo-500/20 blur-[60px] pointer-events-none"></div>
+                            {/* Ambient Glow Orb */}
+                            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-indigo-500/30 blur-[80px] pointer-events-none rounded-full"></div>
 
-                            {/* Cinematic Header Image */}
-                            <div className="h-44 bg-slate-100 relative group">
-                                {lastSavedPost.featuredImage ? (
-                                    <img src={`${API_URL}${lastSavedPost.featuredImage}`} className="w-full h-full object-cover" alt="Cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-300">
-                                        <ImageIcon size={48} />
-                                    </div>
-                                )}
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">
-                                    <div className="relative">
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-2">
-                                            <Sparkles size={10} className="fill-current" /> Published Live
-                                        </span>
-                                        <h2 className="text-white font-bold text-xl leading-tight line-clamp-2 drop-shadow-md">{lastSavedPost.title}</h2>
+                            {/* Content Wrapper */}
+                            <div className="relative z-10">
+                                
+                                {/* Image Section (Top Half) */}
+                                <div className="h-48 w-full relative group overflow-hidden">
+                                    {lastSavedPost.featuredImage ? (
+                                        <img src={`${API_URL}${lastSavedPost.featuredImage}`} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" alt="Cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-slate-900 flex items-center justify-center">
+                                            <Rocket size={48} className="text-white/20" />
+                                        </div>
+                                    )}
+                                    {/* Gradient Fade to Black */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0F172A]/20 to-[#0F172A]"></div>
+                                    
+                                    {/* Success Badge */}
+                                    <div className="absolute top-4 left-1/2 -translate-x-1/2">
+                                        <motion.div 
+                                            initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} delay={0.2}
+                                            className="bg-emerald-500/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] flex items-center gap-2"
+                                        >
+                                            <Check size={12} strokeWidth={4} /> System Broadcast Live
+                                        </motion.div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Modal Body */}
-                            <div className="p-6 relative bg-white">
-                                {/* URL Box */}
-                                <div className="flex items-center gap-3 p-1.5 bg-slate-50 border border-slate-200 rounded-xl mb-6 shadow-sm">
-                                    <div className="p-2.5 bg-white rounded-lg border border-slate-200 text-indigo-500 shadow-sm">
-                                        <Globe size={16} />
+                                {/* Text & Actions Section (Bottom Half) */}
+                                <div className="px-8 pb-8 -mt-6">
+                                    <h2 className="text-white text-2xl font-black text-center leading-tight mb-2 drop-shadow-lg">
+                                        {lastSavedPost.title}
+                                    </h2>
+                                    <p className="text-slate-400 text-xs font-mono text-center mb-6">
+                                        https://ankyy.com/blog/{lastSavedPost.slug}
+                                    </p>
+
+                                    {/* The Copy Box */}
+                                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2 mb-6 hover:bg-white/10 transition-colors group">
+                                        <Globe className="text-indigo-400 ml-2" size={16} />
+                                        <input 
+                                            readOnly 
+                                            value={`https://ankyy.com/blog/${lastSavedPost.slug}`} 
+                                            className="bg-transparent flex-1 text-xs text-slate-300 font-mono outline-none"
+                                        />
+                                        <button 
+                                            onClick={copyToClipboard}
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}
+                                        >
+                                            {copied ? 'Copied!' : 'Copy Link'}
+                                        </button>
                                     </div>
-                                    <input 
-                                        readOnly 
-                                        value={`https://ankyy.com/blog/${lastSavedPost.slug}`} 
-                                        className="flex-1 bg-transparent text-xs font-semibold text-slate-700 outline-none font-mono"
-                                    />
+
+                                    {/* Social Grid */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <a 
+                                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(lastSavedPost.title)}&url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
+                                            target="_blank" rel="noreferrer"
+                                            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black border border-white/10 text-white hover:bg-white hover:text-black hover:border-white transition-all text-xs font-bold"
+                                        >
+                                            <Twitter size={16} /> Share on X
+                                        </a>
+                                        <a 
+                                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
+                                            target="_blank" rel="noreferrer"
+                                            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0077b5] text-white hover:brightness-110 transition-all text-xs font-bold shadow-lg shadow-[#0077b5]/20"
+                                        >
+                                            <Linkedin size={16} /> LinkedIn
+                                        </a>
+                                    </div>
+                                    
                                     <button 
-                                        onClick={copyToClipboard}
-                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm ${copied ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                                        onClick={() => { setShowSuccessModal(false); setView('list'); }}
+                                        className="w-full mt-6 text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest transition-colors"
                                     >
-                                        {copied ? 'Copied' : 'Copy'}
+                                        Close Terminal
                                     </button>
                                 </div>
-
-                                {/* Social Actions */}
-                                <div className="grid grid-cols-2 gap-3 mb-6">
-                                    <a 
-                                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(lastSavedPost.title)}&url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
-                                        target="_blank" rel="noreferrer"
-                                        className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black text-white hover:bg-slate-800 transition-all text-xs font-bold shadow-lg shadow-black/10"
-                                    >
-                                        <Twitter size={16} /> Share on X
-                                    </a>
-                                    <a 
-                                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
-                                        target="_blank" rel="noreferrer"
-                                        className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0077b5] text-white hover:bg-[#006097] transition-all text-xs font-bold shadow-lg shadow-[#0077b5]/20"
-                                    >
-                                        <Linkedin size={16} /> LinkedIn
-                                    </a>
-                                </div>
-                                
-                                <button 
-                                    onClick={() => { setShowSuccessModal(false); setView('list'); }}
-                                    className="w-full py-2 text-xs font-bold text-slate-400 hover:text-slate-800 transition-colors"
-                                >
-                                    Close & Return to Dashboard
-                                </button>
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
-            {/* MAIN EDITOR AREA */}
+            {/* --- MAIN EDITOR --- */}
             <div className="flex-1 flex flex-col min-w-0">
                 
                 {/* 1. SOLID HEADER */}
@@ -290,7 +313,6 @@ const Articles = () => {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                         {/* SEO Badge */}
                          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${seoStats.score > 80 ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
                             <BarChart3 size={14} />
                             <span className="text-[10px] font-bold">SEO {seoStats.score}</span>
@@ -315,7 +337,7 @@ const Articles = () => {
                     </div>
                 </div>
 
-                {/* 2. EDITOR BODY (Full Scrollable) */}
+                {/* 2. EDITOR BODY */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar bg-white">
                     <div className="w-full max-w-5xl mx-auto px-8 py-12 pb-32">
                         <textarea 
@@ -357,7 +379,6 @@ const Articles = () => {
                     className="border-l border-slate-200 bg-slate-50/50 backdrop-blur-md flex flex-col shrink-0 overflow-y-auto custom-scrollbar h-full z-10 shadow-2xl"
                 >
                     <div className="p-6 space-y-8">
-                        {/* SEO Header */}
                         <div className="flex items-center justify-between">
                             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                                 <Sparkles size={14} className="text-indigo-500" /> Intelligence
@@ -365,7 +386,6 @@ const Articles = () => {
                             <button onClick={() => setShowSidebar(false)}><X size={14} className="text-slate-400 hover:text-slate-600"/></button>
                         </div>
 
-                        {/* SEO Score Visual */}
                         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                              <div className="flex justify-between text-[10px] font-bold mb-3">
                                 <span className="text-slate-400">Optimization Score</span>
@@ -393,9 +413,7 @@ const Articles = () => {
                             </div>
                         </div>
 
-                        {/* Fields */}
                         <div className="space-y-6">
-                            {/* Image */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 block">Cover Asset</label>
                                 {formData.featuredImage ? (
@@ -429,7 +447,6 @@ const Articles = () => {
                                 )}
                             </div>
 
-                            {/* Slug */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 block">Permalink</label>
                                 <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-100 transition-shadow">
@@ -438,7 +455,6 @@ const Articles = () => {
                                 </div>
                             </div>
 
-                            {/* Excerpt */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 block">Meta Description</label>
                                 <textarea 
@@ -450,7 +466,6 @@ const Articles = () => {
                                 />
                             </div>
 
-                            {/* Status */}
                             <div>
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 block">Visibility</label>
                                 <div className="relative">
