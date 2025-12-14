@@ -6,8 +6,8 @@ import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
     Plus, ArrowLeft, Search, Settings, Image as ImageIcon, 
-    Globe, Hash, X, BarChart3, AlertCircle, CheckCircle2, 
-    Sparkles, Copy, Twitter, Linkedin, Check, ChevronRight, Rocket
+    Globe, X, BarChart3, AlertCircle, CheckCircle2, 
+    Sparkles, Copy, Twitter, Linkedin, Check, ChevronRight, Rocket, ExternalLink
 } from 'lucide-react';
 
 const API_URL = 'https://ankyy.com';
@@ -19,28 +19,23 @@ const analyzeSEO = (data) => {
     const text = data.content.replace(/<[^>]*>/g, '');
     const wordCount = text.length > 0 ? text.split(/\s+/).length : 0;
 
-    // 1. Content Depth
     if (wordCount > 300) score += 10;
     if (wordCount > 800) score += 15;
     if (wordCount > 1500) score += 5;
     if (wordCount < 300) issues.push("Content is too short (Thin Content)");
 
-    // 2. Title Optimization
     if (data.title.length >= 40 && data.title.length <= 60) score += 15;
-    else if (data.title.length > 60) issues.push("Title > 60 chars (Google truncates)");
+    else if (data.title.length > 60) issues.push("Title > 60 chars");
     else issues.push("Title is too short");
 
-    // 3. Structure
     if (data.content.includes('<h2>')) score += 10;
     else issues.push("Add H2 subheadings");
     
-    // 4. Metadata
     if (data.excerpt.length >= 120 && data.excerpt.length <= 160) score += 15;
-    else issues.push("Meta description should be 120-160 chars");
+    else issues.push("Meta description 120-160 chars");
 
     if (data.slug.length > 0 && !data.slug.includes(' ')) score += 10;
 
-    // 5. Assets
     if (data.featuredImage) {
         score += 10;
         if (data.featuredImageAlt) score += 10;
@@ -72,8 +67,6 @@ const Articles = () => {
     const [copied, setCopied] = useState(false);
 
     useEffect(() => { loadPosts(); }, []);
-
-    // Real-time SEO
     useEffect(() => { setSeoStats(analyzeSEO(formData)); }, [formData]);
 
     // Auto-Slug
@@ -98,12 +91,8 @@ const Articles = () => {
             const res = await axios.post(`${API_URL}/api/blog`, payload);
             loadPosts();
 
-            setLastSavedPost({
-                ...payload,
-                slug: res.data.slug || payload.slug
-            });
+            setLastSavedPost({ ...payload, slug: res.data.slug || payload.slug });
             setShowSuccessModal(true);
-
         } catch(e) { alert("Save failed"); }
     };
 
@@ -116,12 +105,10 @@ const Articles = () => {
 
     // --- GLOBAL STYLES FOR SCROLLBAR ---
     const globalStyles = `
-        /* Custom Scrollbar Logic */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .dark-scroll ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
     `;
 
     // --- VIEW 1: DATA GRID (List) ---
@@ -157,7 +144,7 @@ const Articles = () => {
                         animate={{ opacity: 1, y: 0 }}
                         key={post._id} 
                         onClick={() => { setActiveId(post._id); setManualSlug(true); setFormData(post); setView('editor'); }}
-                        className="group flex items-center justify-between px-6 py-4 bg-white border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer"
+                        className="group flex items-center justify-between px-6 py-4 bg-white border border-slate-200 rounded-xl hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer"
                     >
                         <div className="flex items-center gap-4 w-1/2">
                             <div className="w-10 h-10 rounded-md bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0">
@@ -168,14 +155,14 @@ const Articles = () => {
                                 )}
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-sm font-bold text-slate-800 truncate">{post.title}</h3>
+                                <h3 className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{post.title}</h3>
                                 <p className="text-[11px] text-slate-400 font-mono mt-0.5 truncate">/{post.slug}</p>
                             </div>
                         </div>
                         
                         <div className="flex items-center gap-6">
                             <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${
-                                post.status === 'published' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                                post.status === 'published' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
                             }`}>
                                 {post.status}
                             </span>
@@ -193,104 +180,99 @@ const Articles = () => {
         <div className="fixed inset-0 z-50 flex h-full bg-white overflow-hidden">
             <style>{globalStyles}</style>
 
-            {/* --- THE "DARK PRISM" VICTORY MODAL --- */}
+            {/* --- THE "LIQUID PRISM" VICTORY MODAL (THEME MATCHED) --- */}
             <AnimatePresence>
                 {showSuccessModal && lastSavedPost && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        {/* 1. The Backdrop: Deep Dark Blur */}
+                        {/* 1. Backdrop: Light, Clean, Subtle Blur */}
                         <motion.div 
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-950/70 backdrop-blur-2xl"
+                            className="absolute inset-0 bg-slate-900/10 backdrop-blur-sm"
                             onClick={() => setShowSuccessModal(false)}
                         />
                         
-                        {/* 2. The Card: Glowing Dark Mode */}
+                        {/* 2. Card: White, Glassy, Premium */}
                         <motion.div 
-                            initial={{ scale: 0.8, opacity: 0, y: 50 }} 
+                            initial={{ scale: 0.9, opacity: 0, y: 30 }} 
                             animate={{ scale: 1, opacity: 1, y: 0 }} 
-                            exit={{ scale: 0.8, opacity: 0, y: 50 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            className="relative bg-[#0F172A] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-white/10"
+                            exit={{ scale: 0.9, opacity: 0, y: 30 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                            className="relative bg-white rounded-2xl shadow-2xl shadow-slate-200/50 w-full max-w-lg overflow-hidden border border-white ring-1 ring-slate-100"
                         >
-                            {/* Ambient Glow Orb */}
-                            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-indigo-500/30 blur-[80px] pointer-events-none rounded-full"></div>
-
-                            {/* Content Wrapper */}
-                            <div className="relative z-10">
-                                
-                                {/* Image Section (Top Half) */}
-                                <div className="h-48 w-full relative group overflow-hidden">
-                                    {lastSavedPost.featuredImage ? (
-                                        <img src={`${API_URL}${lastSavedPost.featuredImage}`} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" alt="Cover" />
-                                    ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-slate-900 flex items-center justify-center">
-                                            <Rocket size={48} className="text-white/20" />
-                                        </div>
-                                    )}
-                                    {/* Gradient Fade to Black */}
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0F172A]/20 to-[#0F172A]"></div>
-                                    
-                                    {/* Success Badge */}
-                                    <div className="absolute top-4 left-1/2 -translate-x-1/2">
-                                        <motion.div 
-                                            initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} delay={0.2}
-                                            className="bg-emerald-500/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] flex items-center gap-2"
-                                        >
-                                            <Check size={12} strokeWidth={4} /> System Broadcast Live
-                                        </motion.div>
+                            {/* Header Image Area */}
+                            <div className="h-44 w-full relative group overflow-hidden">
+                                {lastSavedPost.featuredImage ? (
+                                    <img src={`${API_URL}${lastSavedPost.featuredImage}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-300">
+                                        <ImageIcon size={48} />
                                     </div>
+                                )}
+                                
+                                {/* Badge (Floating) */}
+                                <motion.div 
+                                    initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} delay={0.2}
+                                    className="absolute bottom-4 left-6 bg-white/90 backdrop-blur-md text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5"
+                                >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Published Successfully
+                                </motion.div>
+                            </div>
+
+                            {/* Content Area */}
+                            <div className="p-8">
+                                <h2 className="text-xl font-bold text-slate-900 leading-tight mb-2">
+                                    {lastSavedPost.title}
+                                </h2>
+                                
+                                <div className="flex items-center gap-1 text-slate-400 text-xs mb-6 font-medium">
+                                    <Globe size={12} />
+                                    <span>ankyy.com/blog/</span>
+                                    <span className="text-slate-600 font-bold">{lastSavedPost.slug}</span>
                                 </div>
 
-                                {/* Text & Actions Section (Bottom Half) */}
-                                <div className="px-8 pb-8 -mt-6">
-                                    <h2 className="text-white text-2xl font-black text-center leading-tight mb-2 drop-shadow-lg">
-                                        {lastSavedPost.title}
-                                    </h2>
-                                    <p className="text-slate-400 text-xs font-mono text-center mb-6">
-                                        https://ankyy.com/blog/{lastSavedPost.slug}
-                                    </p>
-
-                                    {/* The Copy Box */}
-                                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2 mb-6 hover:bg-white/10 transition-colors group">
-                                        <Globe className="text-indigo-400 ml-2" size={16} />
-                                        <input 
-                                            readOnly 
-                                            value={`https://ankyy.com/blog/${lastSavedPost.slug}`} 
-                                            className="bg-transparent flex-1 text-xs text-slate-300 font-mono outline-none"
-                                        />
-                                        <button 
-                                            onClick={copyToClipboard}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${copied ? 'bg-emerald-500 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}
-                                        >
-                                            {copied ? 'Copied!' : 'Copy Link'}
-                                        </button>
+                                {/* Copy Box (Clean Style) */}
+                                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 mb-6">
+                                    <div className="p-2 bg-white rounded-lg border border-slate-100 shadow-sm text-indigo-500">
+                                        <Rocket size={16} />
                                     </div>
-
-                                    {/* Social Grid */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <a 
-                                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(lastSavedPost.title)}&url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
-                                            target="_blank" rel="noreferrer"
-                                            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black border border-white/10 text-white hover:bg-white hover:text-black hover:border-white transition-all text-xs font-bold"
-                                        >
-                                            <Twitter size={16} /> Share on X
-                                        </a>
-                                        <a 
-                                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
-                                            target="_blank" rel="noreferrer"
-                                            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0077b5] text-white hover:brightness-110 transition-all text-xs font-bold shadow-lg shadow-[#0077b5]/20"
-                                        >
-                                            <Linkedin size={16} /> LinkedIn
-                                        </a>
-                                    </div>
-                                    
+                                    <input 
+                                        readOnly 
+                                        value={`https://ankyy.com/blog/${lastSavedPost.slug}`} 
+                                        className="bg-transparent flex-1 text-xs text-slate-600 font-mono outline-none"
+                                    />
                                     <button 
-                                        onClick={() => { setShowSuccessModal(false); setView('list'); }}
-                                        className="w-full mt-6 text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-widest transition-colors"
+                                        onClick={copyToClipboard}
+                                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm ${copied ? 'bg-emerald-500 text-white shadow-emerald-200' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900'}`}
                                     >
-                                        Close Terminal
+                                        {copied ? 'Copied' : 'Copy'}
                                     </button>
                                 </div>
+
+                                {/* Social Grid */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <a 
+                                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(lastSavedPost.title)}&url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
+                                        target="_blank" rel="noreferrer"
+                                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-black text-white hover:opacity-80 transition-all text-xs font-bold"
+                                    >
+                                        <Twitter size={14} /> Share on X
+                                    </a>
+                                    <a 
+                                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://ankyy.com/blog/${lastSavedPost.slug}`)}`}
+                                        target="_blank" rel="noreferrer"
+                                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#0077b5] text-white hover:opacity-90 transition-all text-xs font-bold shadow-sm"
+                                    >
+                                        <Linkedin size={14} /> LinkedIn
+                                    </a>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => { setShowSuccessModal(false); setView('list'); }}
+                                    className="w-full mt-6 text-[10px] font-bold text-slate-400 hover:text-slate-700 uppercase tracking-widest transition-colors"
+                                >
+                                    Close Editor
+                                </button>
                             </div>
                         </motion.div>
                     </div>
@@ -369,14 +351,14 @@ const Articles = () => {
                 </div>
             </div>
 
-            {/* RIGHT: SETTINGS SIDEBAR */}
+            {/* RIGHT: SETTINGS SIDEBAR (GLASS EFFECT) */}
             <AnimatePresence>
             {showSidebar && (
                 <motion.div 
                     initial={{ width: 0, opacity: 0 }} 
                     animate={{ width: 340, opacity: 1 }} 
                     exit={{ width: 0, opacity: 0 }}
-                    className="border-l border-slate-200 bg-slate-50/50 backdrop-blur-md flex flex-col shrink-0 overflow-y-auto custom-scrollbar h-full z-10 shadow-2xl"
+                    className="border-l border-slate-200 bg-white/80 backdrop-blur-xl flex flex-col shrink-0 overflow-y-auto custom-scrollbar h-full z-10 shadow-2xl"
                 >
                     <div className="p-6 space-y-8">
                         <div className="flex items-center justify-between">
